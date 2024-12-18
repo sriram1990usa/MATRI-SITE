@@ -1,0 +1,988 @@
+https://masteringdjango.com/django-tutorials/mastering-django-advanced-models/
+
+{% extends './base.html' %}
+{{ value|linenumbers }}
+{{ value|linebreaksbr }}
+{% block main-content %} 
+<div class="container">    
+<pre>
+    <a href="https://copyprogramming.com/howto/how-to-transform-only-the-values-of-a-queryset-into-a-new-array-of-dictionaries-in-django">queryset querries</a>
+
+    CREATE TABLE Person (
+        id int,
+        user = models.ForeignKey(User, on_delete=models.CASCADE)
+        name varchar(200),
+        locality varchar(200),
+        city varchar(50)
+        zipcode int(5)
+        state varchar(50),
+    );
+
+    class Customer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    locality = models.CharField(max_length=200)
+    city = models.CharField(max_length=50)
+    zipcode = models.IntegerField()
+    state = models.CharField(choices=STATE_CHOICES, max_length=50)
+
+    
+SQL     	Django
+int	        IntegerField()
+varchar(n)	CharField(max_length=n)
+text	    TextField()
+float(n)	FloatField()
+date    	DateField()
+time	    TimeField()
+datetime	DateTimeField()
+
+QuerySet API reference 
+>> When QuerySets are evaluated >  Pickling QuerySets
+>> QuerySetAPI 
+> Methods that return new QuerySets
+> Operators that return new QuerySets
+> Methods that do not return QuerySets
+> Field lookups
+> Aggregation functions
+>> Query-related tools
+> Q() objects
+> Prefetch() objects
+> prefetch_related_objects()
+> FilteredRelation() objects
+
+****************************** Methods that return new QuerySets *****************************
+
+all()      annotate()    alias()   distinct()  dates()   datetimes()    difference()   defer()
+exclude()  extra()       filter()  intersection()        none()         order_by()     only()
+reverse()  values()      values_list()                   prefetch_related()            raw()
+select_for_update()      select_related()                union()                       using()
+
+******************************* Methods that return new QuerySets ************************
+1.all()	Return a copy of the current QuerySet        
+
+        customer1 = Customer.objects.all()          #  SELECT * FROM Customer;      
+        customer1 = {{customer1}}        
+        # customer1a = customer1[0].name 
+        customer1a = (Customer.objects.all())[0].name # ok
+        customer1a = {{customer1a}}
+        customer1b = Customer.objects.all()[:10]    # SELECT * FROM Customer LIMIT 10;
+        customer1b = {{customer1b}}
+        customer1c = Customer.objects.all()[2:5]   # SELECT * FROM Customer OFFSET 2 LIMIT 3;
+        customer1c = {{customer1c}}
+-------------------------------------------------------------------------
+2.annotate()	Annotate each object in the QuerySet. 
+Annotations can be simple values, a field reference or an aggregate expression
+    SQL: SELECT gender, COUNT(*) as count FROM Customer GROUP BY city;
+    qry1 = Customer.objects.annotate(total_attendees=Count('city1'))
+    qry2 = Customer objects.annotate(total_attendees=Count('attendees'))
+    for Customer in qry2:
+        print(Customer name, Customer total_attendees)      
+
+    customer2a = customer1.annotate(Count('city'))
+    {{customer2a}} 
+    customer2b = customer2a[0].name
+    {{customer2b}}
+    customer2c = customer2a[0].city__count
+    {{customer2c}}
+    customer2d = Customer.objects.values('city').annotate(count=Count('city'))
+    {{customer2d}}
+----------------------------------------------------------------------------------
+3.alias() Same as annotate(), but instead of annotating objects in the QuerySet, 
+        saves the expression for later reuse with other QuerySet methods.
+
+    customer3a = Customer.objects.alias(zipcodes=Count("zipcode")).values()
+    {{customer3a}}
+    customer3a = Customer.objects.alias(zipcodes=Count("zipcode")).filter(zipcode__gt=12345)
+    {{customer3b}}
+--------------------------------------------------------------------------------------
+4.defer()   Do not retrieve the named fields from the database. 
+            Used to improve query performance on complex datasets
+
+    customer4a= Customer.objects.defer("state")
+    {{customer4a}}
+    # does not work
+--------------------------------------------------------------------------
+5.difference() Use the SQL EXCEPT operator to return elements in the first QuerySet that are not in the others
+    
+    customer5a = Customer.objects.all() 
+    customer5b = Customer.objects.filter(city__exact="city3")
+    customer5c = customer6a.difference(customer5b)  
+    {{customer5c}}
+---------------------------------------------------------------------------------
+6.distinct()	Perform an SQL SELECT DISTINCT query to eliminate duplicate rows
+        SQL: SELECT DISTINCT name, city FROM Customer;
+
+    customer6a = Customer.objects.distinct() 
+    {{customer6a}}
+    customer6b = Customer.objects.values().distinct() 
+    {{customer6b}}
+    customer6c = Customer.objects.values('name', 'city').distinct()  
+    {{customer6c}}
+-------------------------------------------------------------------------------------
+7.dates() Returns a QuerySet containing all available dates in the specified date range
+
+    customer7a = OrderPlaced.objects.dates('ordered_date', 'year')  
+    {{customer7a}} 
+    customer7b = OrderPlaced.objects.dates('ordered_date', 'month')
+    {{customer7b}} 
+    customer7c = OrderPlaced.objects.dates('ordered_date', 'week')  
+    {{customer7c}}
+    customer7d = OrderPlaced.objects.dates('ordered_date', 'day')   
+    {{customer7d}} 
+----------------------------------------------------------------------------------       
+8.datetimes()	
+Returns a QuerySet containing all available dates in the specified date and time range
+customer8 = OrderPlaced.objects.all().values('ordered_date')  
+customer8 = {{customer8}}
+customer8a = (OrderPlaced.objects.datetimes('ordered_date', 'year', tzinfo=None)).get(id=1) 
+customer8a = {{customer8a}}
+customer8b = (OrderPlaced.objects.datetimes('ordered_date', 'month', tzinfo=None)).get(id=1) 
+customer8b = {{customer8b}}
+customer8c = (OrderPlaced.objects.datetimes('ordered_date', 'day', tzinfo=None)).get(id=1)
+customer8c = {{customer8c}}
+customer8d = (OrderPlaced.objects.datetimes('ordered_date', 'hour', tzinfo=None)).get(id=1)  
+customer8d = {{customer8d}}
+customer8e = (OrderPlaced.objects.datetimes('ordered_date', 'minute', tzinfo=None)).get(id=1)  
+customer8e = {{customer8e}}
+customer8f = (OrderPlaced.objects.datetimes('ordered_date', 'second', tzinfo=None)).get(id=1)  
+customer8f = {{customer8f}}
+# customer8a = OrderPlaced.objects.datetimes('ordered_date', 'year', tzinfo=None)
+# customer8b = customer8a.get(id=1)
+# customer8a = ', '.join(str(item['day']) for item in customer8a)
+# customer8a = datetime.strptime(customer8a, "%Y-%m-%dT%H:%M:%S.%fZ") 
+# customer8c = OrderPlaced.objects.filter(ordered_date=timezone.date())
+--------------------------------------------------------------------------------
+9.extra()
+students = Student.objects.filter(
+        is_active=True,
+    ).extra(
+        select={
+            'state':
+                'SELECT name FROM state WHERE '
+                'state.id = '
+                'testapp_student.state_id',
+            'city':
+                'SELECT name FROM city WHERE '
+                'city.id = '
+                'testapp_student.city_id',
+        },
+    )
+
+------------------------------------------------------------------------------
+10.exclude()	Filter by objects that don’t match the given lookup parameters
+        SELECT * FROM Customer WHERE name != 'cname1';
+        SELECT * FROM Customer WHERE NOT name='cname1';
+        customer10 = Customer.objects.exclude(name="cname1")
+        ans: {{customer10}}
+----------------------------------------------------------------------------
+11.filter()	 use get() to get a single unique object, 
+             and filter() to get(filter) all objects that match given lookup parameters.
+             Multiple parameters are joined by SQL AND statements 
+
+11a.customer11a = Customer.objects.filter(name=request.user).values()
+    {{customer11a}}
+
+11b.customer11b = Customer.objects.filter(name='cname1').values()    
+    {{customer11b}} 
+    
+11c.customer11c = Customer.objects.filter(id=1).values()
+    {{customer11c}}
+    SELECT * FROM Customer WHERE id = 1; 
+ >= 1;    
+
+11d.customer11d = Customer.objects.filter(name='cname1').values() | Customer.objects.filter(name='cname2').values()
+    {{customer11d}}    
+
+11e.customer11e = Customer.objects.filter(Q(city='city1') | Q(name='cname2')).values('name', 'city')
+    {{customer11e}}
+    SELECT * FROM CustomerWHERE city='city1' OR name='cname2';
+-------------------------------------------------------------------------   
+11ca. customer11ca = Customer.objects.filter(name__contains='name', id__gt=1).values_list()
+        {{customer11ca}}
+        SELECT * FROM Customer WHERE name='cname1' AND id  
+
+11f.  contains  SQL: SELECT * FROM Customer WHERE name like '%name1%';
+        customer11f = Customer.objects.filter(name__contains='name1').values()
+        {{customer11f}}           
+    
+11g.customer11g = Customer.objects.filter(name__icontains='cname1').values()
+    {{customer11g}}    
+    SELECT * FROM Customer WHERE name like binary '%cname1%';
+-------------------------------------------------------------------------   
+11h.  exact 
+    customer11h = Customer.objects.filter(name__exact='cname1').values()
+    {{customer11h}}
+    
+11i.customer11i = Customer.objects.filter(city__exact="city3")
+    {{customer11i}}        
+    
+11j.customer11j = Customer.objects.filter(name__iexact='cname1').values()
+    {{customer11j}}
+-----------------------------------------------------------------------   
+
+11k.  startswith  SQL:   SELECT * FROM Customer WHERE zipcode like 'A%'; 
+    customer11k = Customer.objects.filter(zipcode__startswith=1).values('name', 'zipcode') 
+    {{customer11k}}        
+
+11k.customer11l = Customer.objects.filter(state__istartswith='P').values('name', 'state')    
+    {{customer11l}}    
+    SELECT * FROM Customer WHERE state like binary 'A%';
+------------------------------------------------------------------------     
+11m.  endswith   SQL:   SELECT * FROM Customer WHERE name like '%A';   
+    customer11m= Customer.objects.filter(name__endswith='1').values()
+    {{customer11m}}
+
+11n.customer11n = Customer.objects.filter(state__iendswith='R').values()
+    {{customer11n}}    
+    SELECT * FROM Customer WHERE state like binary '%A';   
+------------------------------------------------------------------------ 
+11o. in
+    customer11o = Customer.objects.filter(city__in=['city1', 'city3']).values('name', 'city')   
+    {{customer11o}}    
+    SELECT * FROM Customer WHERE city in ('city1', 'city2'); 
+-----------------------------------------------------------------------
+11p. # customer.objects.filter(event_date__year=2020, event_date__month__lt=9)
+    customer11p = Customer.objects.filter(id__gt=1).values('id', 'name')
+    {{customer11p}}  
+    SELECT * FROM Customer WHERE id > 1;   
+
+11q.customer11q = Customer.objects.filter(id__gte=2).values('id', 'city')      
+    {{customer11q}} 
+    SELECT * FROM Customer WHERE id >= 2; 
+-----------------------------------------------------------------------      
+11r.customer11r = Customer.objects.filter(id__lt=3).values('id', 'name') 
+    {{customer11r}} 
+    SELECT * FROM Customer WHERE id < 3; 
+
+11s.lte  SQL: SELECT * FROM Customer WHERE id <= 2;
+    customer11s = Customer.objects.filter(id__lte=2).values('id', 'locality')
+    {{customer11s}}     
+------------------------------------------------------------------- 
+11t. range   SQL: SELECT * FROM Customer WHERE id BETWEEN 2 AND 4;
+    customer11t = Customer.objects.filter(id__range=(2, 4)).values()
+    {{customer11t}}
+    
+11u. filter().count()	Count the number of objects in the returned QuerySet. Returns an integer
+    customer11u = Customer.objects.filter(name='cname2').count() 
+    ans: {{customer11u}} 
+    
+11v.filter()exists()	Returns True if the QuerySet contains any results
+    customer11v = Customer.objects.filter(name='cname3').exists()
+    ans: {{customer11v}}
+--------------------------------------------------------------------------------------
+12. intersection()	Use the SQL INTERSECT operator to return the shared elements of two or more QuerySets
+        customer12a = Customer.objects.all() 
+        customer12b = Customer.objects.filter(city__exact="city3")
+        customer12c = customer12a.intersection(customer12b)  
+        {{customer12c}}
+------------------------------------------------------------------------------------  
+13. list() customer13=list(customer1)
+    {{customer13}}
+--------------------------------------------------------------
+14. none() will create a queryset that never returns any objects 
+       and no query will be executed when accessing the results
+    customer14 = Customer.objects.none() 
+    {{customer14}} 
+    
+    SELECT * FROM Customer WHERE state is NULL;
+    customer14a = Customer.objects.filter(state__isnull=True)
+    {{customer14a}}     
+    customer14b = Customer.objects.filter(state=None)
+    {{customer14b}} 
+
+    SELECT * FROM Customer WHERE state is NOT NULL;
+    customer14c = Customer.objects.filter(state__isnull=False)
+    {{customer14c}} 
+    customer14d = Customer.objects.exclude(state=None)
+    {{customer14d}} 
+--------------------------------------------------------------
+15. only()	    Opposite of defer()—return only the named fields  
+    SQL: SELECT name FROM Customer;
+    customer15 = Customer.objects.only('name')  
+    {{customer15}}  
+    customer15a = Customer.objects.only('name').values()
+    {{customer15a}}
+    customer15b = Customer.objects.only('name').values_list()  
+    {{customer15b}}    
+    customer15c = Customer.objects.only('name').values_list('name') 
+    {{customer15c}}
+    customer15d = Customer.objects.only('name').values_list('name', flat=True)
+    {{customer15d}} 
+    customer15e = Customer.objects.filter(id=1).only('name') 
+   {{customer15e}}
+---------------------------------------------------------------
+16. order_by()	Change the default ordering of the QuerySet
+
+        SELECT * FROM Customer order by name;
+        customer16a = Customer.objects.all().order_by('name')
+        customer16a: {{customer16a}}
+
+        customer16b = Customer.objects.all().order_by('name','city')  
+        customer16b: {{customer16b}}
+
+        SELECT * FROM Customer ORDER BY name DESC;
+        customer16c = Customer.objects.all().order_by('-name') 
+        customer16c: {{customer16c}}    
+        ------------------------------    
+        customer16d = Customer.objects.all().order_by('name').values()
+        customer16d: {{customer16d}}
+
+        customer16e = Customer.objects.all().order_by('-name').values()
+        customer16e: {{customer16e}}
+
+        customer16f = Customer.objects.all().order_by('name', '-id').values()
+        customer16f: {{customer16f}}    
+---------------------------------------------------------------------------
+17. reverse()	Reverse the default ordering of the QuerySet
+        customer17 = Customer objects.all().reverse()  ????
+        {{customer17}}
+
+17a. reversed()  customer17a=for customer in reversed(customer1): customer.name 
+        {{customer17a}}
+        customer17a = list(reversed(customer1))
+        {{customer17a}}
+             
+18a. raw()	    Execute a raw SQL statement
+    The raw() manager method can be used to perform raw SQL queries that return model instances:
+    Manager.raw(raw_query, params=(), translations=None)¶
+    This method takes a raw SQL query, executes it, and returns a django.db.models.query.RawQuerySet instance. 
+    This RawQuerySet instance can be iterated over like a normal QuerySet to provide object instances.
+------------------------------------------------------
+18. prefetch_related()	# Reverse ForeignKey relationship
+Select all related data when executing the query (including many-to-many relationships)
+    class ModelB(models.Model):                    #  A=User   B=Customer
+        a = models.ForeignKey(ModelA, on_delete=models.CASCADE)
+        ModelA.objects.prefetch_related('modelb_set').all()
+
+    SELECT * FROM Customer WHERE Customer.user_id = 1;
+    user = User.objects.prefetch_related('customer_set').get(id=1)
+    customer = user.customer_set.all()
+    customer 18 = customer.user.id
+    customer 18 = {{customer18}}
+--------------------------------------------------------------------
+19. select_related()	# Forward ForeignKey relationship
+Select all related data when executing the query (except many-to-many relationships)
+    class ModelB(models.Model):                    #  A=User   B=Customer
+        a = models.ForeignKey(ModelA, on_delete=models.CASCADE)
+        odelB.objects.select_related('a').all()
+
+    from django.contrib.auth.models import User
+    class Customer(models.Model):
+        user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    # customer19 = Customer.objects.select_related('user').all()
+    customer = Customer.objects.select_related('user').get(id=1)
+    customer19 = customer.user.id
+    {{customer19}}
+
+19a.select_for_update()	Return a QuerySet and lock table rows until the end of the transaction
+    SELECT name FROM Book LEFT JOIN Publisher ON Book.publisher_id = Publisher.id 
+            WHERE Book.id=1;
+
+------------------------------------------------------------------
+20. slice   
+    customer20 = customer1[::-1] 
+    {{customer20}}
+--------------------------------------------------------------------
+21. using()	Select which database the QuerySet will be evaluated against (when using multiple databases)
+    using(),    using(alias)
+    method to control which database the QuerySet will be evaluated against when using more than one database. 
+    The only argument this method takes is the alias of a database, as defined in DATABASES.
+
+    # queries the database with the 'default' alias.
+    Entry.objects.all()
+
+    # queries the database with the 'backup' alias
+    Entry.objects.using('backup')
+--------------------------------------------------------------------
+22. union() Use the SQL UNION operator to combine two or more QuerySets
+        customer22 = Customer.objects.first()
+        .union
+        (Customer.objects.last())
+        customer22 = {{customer22}}
+        # 'Customer' object has no attribute 'union'
+-------------------------------------------------------------------------
+23. values()
+    customer23 = Customer.objects.values()
+    {{customer23}} 
+    customer23a = Customer.objects.values('name','city')
+    {{customer23a}} 
+--------------------------------------------------------------------------
+24. values_list()	Returns tuples instead of model instances
+        customer24 = Customer objects.values_list('') 
+        {{customer24}} 
+        customer24a = Customer objects.values_list('name')
+        {{customer24a}} 
+         
+------------------------------------------------------------------
+28. union  Uses SQL’s UNION operator to combine the results of two or more QuerySets. 
+    customer28a = Customer.objects.values_list('name').filter(id=3) 
+    {{customer28a}}
+    customer28b = Customer.objects.values_list('name').filter(id=2)
+    {{customer28b}}
+    customer28c = Customer.objects.values_list('name').filter(id=1)
+    {{customer28c}}
+    customer28d = customer28c.union(customer28a, customer28b)
+    {{customer28d}}
+    customer28e = customer28c.union(customer28a, customer28b).order_by('name')
+    {{customer28e}}
+   
+++++++++++++++++++++ Operators that return new QuerySets +++++++++++++++++++++
+AND (&)	Combine two QuerySets with the SQL AND operator. Using AND (&) is functionally equivalent to using filter() with multiple parameters
+    customer25 = Customer.objects.filter(city="city1") & Customer.objects.filter(name_contains="1")
+    customer25: {{customer25}}
+        
+OR (|)	Combine two QuerySets with the SQL OR operator
+    customer26 = Customer objects.filter(id=1) | Customer objects.filter(id=3)
+    {{customer26}} 
+
+XOR (^)
+    customer27 = Customer.objects.filter(Q(city="city1") ^ Q(city="city3"))
+    {{customer27}}
+
++++++++++++++++++ Methods that do not return QuerySets +++++++++++++++++++++++++++++++
+
+as_manager()    aggregate()     bulk_create()       bulk_update()       create()  
+contains()      count()         delete()            explain()           exists()
+earliest()      first()         get_or_create()     get()               in_bulk()           
+iterator()      With server-side cursors            Without server-side cursors
+latest()        last()          update_or_create()                    
+update()        Ordered queryset  
+
+----------------------------------------------------------------------------------
+Methods that do not return QuerySets
+-------------------------------------------------
+a. aggregate() Return a dictionary of aggregate values calculated over the QuerySet
+    customera = Customer.objects.aggregate(Count("city"))
+    {{customera}}
+    customeraa = Customer.objects.aggregate(number_of_entries=Count("locality"))
+    {{customeraa}}
+---------------------------------------------------------------------------------
+b. as_manager()	Class method returns a Manager class instance containing a copy of the QuerySet’s methods
+    See Creating a manager with QuerySet methods for more details.
+    customerb=
+----------------------------------------------------------------------
+c. bulk_create()  Insert a list of objects in the database
+    def bulk_create(request):    
+        product = Product.objects.bulk_create(
+            [ Product(title='product2', selling_price=10, discount_price=9),
+            Product(title='product3', selling_price=30, discount_price=25)
+            ]
+        )
+        return product
+    customerc = bulk_create(request)
+    customerc = {{customerc}}
+      
+    from itertools import islice
+    batch_size = 100
+    objs = (Entry(headline="Test %s" % i) for i in range(1000))
+    while True:
+        batch = list(islice(objs, batch_size))
+        if not batch:
+            break
+        Entry.objects.bulk_create(batch, batch_size)      
+------------------------------------------------
+d. bulk_update() Update given fields in the listed model instances
+    customer.objects.bulk_update(update_list, ['last_name'])
+    def bulk_update(request):   
+        product = [
+            Product.objects.create(title='product2', selling_price=20, discount_price=18),
+            Product.objects.create(title='product3', selling_price=30, discount_price=27),
+        ]
+        product[0].title = "This is entry 1"
+        product[1].title = "This is entry 2"
+        Product.objects.bulk_update(product, ["title"])
+        return product.title, product.selling_price
+
+    customerd = bulk_update(request)
+    customerd = {{customerd}}
+-----------------------------------------
+da. display all attributes 
+    'customerda' : {{customerda}}
+
+db. display all key value pairs 
+    'customerdb': {{customerdb}}
+----------------------------------------------------
+e. contains()
+    customer = Customer.objects.all()
+    customerobj = Customer.objects.filter(id=1).get()      
+    if customer.contains(customerobj):
+        print("Queryset customer contains in obj customer.id=1")
+        return 'Queryset customer contains in obj customer.id=1'
+    if customerobj in customer:
+        print("obj customer.id=1 contained in queryset customer")
+        return 'obj customer.id=1 contained in queryset customer'
+
+    customere = contains(request)
+
+    customere = {{customere}}
+    11f.customer11f = Customer.objects.filter(name__contains='name1').values()
+    {{customer11f}} 
+----------------------------------------------------------------------
+f. create()  Shortcut method to create and save an object in one step
+    def bulk_create_f(request):    
+        product = Product.objects.create(
+            [ Product(title='product4', selling_price=40, discount_price=36),
+             ]
+        )
+        return product
+    customerf = bulk_create_f(request)
+    customerf = {{customerf}}
+--------------------------------------------------------------------
+g. count()
+    def count_g(request):    
+        count_g = Product.objects.count()
+        count_ga = Product.objects.filter(title_contains="product4").count()
+        return count_g, count_ga
+
+    customerg = count_g(request)
+    customerg = {{customerg}}
+--------------------------------------------------------------------
+h. delete()	Performs an SQL DELETE that deletes all rows in the QuerySet
+    SQL: DELETE FROM Customer;
+    Customer.objects.all().delete()
+    def delete_f(request): 
+        count_ha = Product.objects.count()
+        try:
+            b = Product.objects.get(id=202)
+            # b = Product.objects.filter(product=b).delete()
+            b.delete()
+            count_hb = Product.objects.count()      
+            return count_ha, count_hb
+        except:
+            return 'product matching query does not exist'
+        
+    customerh = delete_f(request) 
+    customerh = {{customerh}}
+    
+    SQL: DELETE FROM Customer WHERE age < 10;
+    def delete_fa(request): 
+    count_ha = Customer.objects.count()
+    try:
+        b = Customer.objects.filter(zipcode__gt=34567).delete()
+        count_hb = Customer.objects.count()      
+        return count_ha, count_hb
+    except:
+        return 'customer matching query does not exist'
+        
+    customerfa = delete_fa(request) 
+    customerfa = {{customerfa}}
+  -----------------------------------------------------------------------------
+i. exists()
+    def exists_f(reqest):   
+        product = Product.objects.all()
+        if product.exists():
+            print("There is at least one object in some_queryset") 
+            msga = "product.exists" 
+            return msga
+        if product:
+            print("There is at least one object in some_queryset")
+            msgb = "There is product"
+            return msgb
+    customeri = exists_f(request)
+    customeri = {{customeri}}
+---------------------------------------------------------------------------
+j. explain() Returns a string of the QuerySet’s execution plan. Used for analyzing query performance
+    def explain_f(request):    
+        print(Product.objects.filter(title="My Blog").explain())
+        msga = Product.objects.filter(title="My Blog").explain()
+        # print(Product.objects.filter(title="My Blog").explain(verbose=True, analyze=True))
+        # msgb = Product.objects.filter(title="My Blog").explain(verbose=True, analyze=True)    
+        return msga
+
+    customerj = explain_f(request)
+    customerj = {{customerj}}
+    -----------------------------------------------------------------------------------
+k. earliest() Return the earliest object in the database table based on the given field(s)
+    def earliest_k(request):
+        customera = Customer.objects.latest("city")
+        msga = customera
+        customerb = Customer.objects.latest("city", "name")
+        msgb = customerb
+        return msga, msgb
+
+    customerk = earliest_k(request)
+    customerk = {{customerk}}
+---------------------------------------------------------------------------------
+l. first() Return the first object matched by the QuerySet
+    def earliest_k(request):
+        c1 = Customer.objects.order_by("name", "city").first()
+        msg = c1
+        try:
+            c2 = Customer.objects.order_by("name", "city")[0]
+        except IndexError:
+            c2 = None
+        msg = c2
+        return c1, c2
+
+    customerl = earliest_k(request)
+    customerl = {{customerl}}
+--------------------------------------------------------------------------------------
+m. get_or_create()	Returns a single object. If the object doesn’t exist, it creates one    
+    def get_or_create_m(request):
+        customer, created = Customer.objects.get_or_create(
+            user_id=2, name="cname12", locality="loca12", city='city12',
+              zipcode=12121, state='Newyork',   
+        )
+        return customer, created
+    
+    customerm = get_or_create_m(request)
+    customerm = {{customerm}}   
+--------------------------------------------------------------------------------------  
+n. get() Returns a single object. Throws an error if lookup returns multiple objects        
+    def get(request):
+        try:
+            user_id = 2
+            customer = Customer.objects.get(user_id=user_id, id=1)
+            return customer.locality
+        except ObjectDoesNotExist:
+            print("Either the blog or entry doesn't exist.")
+        customerna = Customer.objects.get(id=1) 
+        customernb = Customer.objects.get(Q(city="city3") & Q(name="cname3"))
+        return customerna, customernb
+
+    customern = get(request)
+    customern = {{customern}}
+------------------------------------------------------------------------------------------
+no. INSERT INTO Customer VALUES 
+        (user_id=1, name="cname11", locality="loca11", city='city11', zipcode=11111, state='Newyork' );
+    def insert_na(request):
+        try:
+            customer, created = Customer.objects.create(
+                user_id=1, name="cname11", locality="loca11", city='city11', zipcode=11111, state='Newyork'   
+                )
+            customer.save()
+            print('ln 846 ', customer.name, customer.city)
+            return customer.name, customer.city
+        except:
+            print("customer not created")
+
+    customerna = insert_na(request)                     
+    customerna = {{customerna}}
+
+o. in_bulk() Return a QuerySet containing all objects with the listed IDsdef in_bulk(request):
+    def in_bulk(request):
+        try:
+            # cus = Customer.objects.in_bulk()
+            cus = Customer.objects.in_bulk([1,50]).values() # ids 1 & 50
+            # cus1 = cus[2].name
+            return cus
+        except:
+            return 'in_bulk does not work'
+    
+    customero = in_bulk(request)
+    customero = {{customero}}
+    --------------------------------------------------------------------------------------------------
+p. iterator() Evaluate a QuerySet and return an iterator over the results. 
+    Can improve performance and memory use for queries that return a large number of objects
+    def iterator(request):
+        try:
+            customer = Customer.objects.filter(name__contains="cname")
+            for cus in customer.iterator():
+                return cus
+        except:
+            return 'iterator does not work'
+
+    customerp = iterator(request)
+    customerp = {{customerp}}
+
+    With server-side cursors
+    Without server-side cursors
+--------------------------------------------------------------------------------------------------------
+q. latest()	Return the latest object in the database table based on the given field(s)
+    def latest(request):
+        cus1 = Customer.objects.latest('city')
+        cus2 = Customer.objects.latest("name", "state")
+        return cus1, cus2
+
+    customerq = latest(request) 
+    customerq = {{customerq}}
+----------------------------------------------------------------------------------------------------   
+r.last()   Return the last object matched by the QuerySet
+    def last(request):
+        cus1 = Customer.objects.last()
+        cus2 = Customer.objects.order_by("name", "state").last()
+        return cus1, cus2
+    
+    customerr = last(request)
+    customerr = {{customerr}}
+----------------------------------------------------------------------------------------------------
+s. Ordered queryset
+    Chaining order_by() with update() is supported only on MariaDB and MySQL, 
+    and is ignored for different databases. 
+    This is useful for updating a unique field in the order that is specified without conflicts. For example:
+    
+    Entry.objects.order_by("-number").update(number=F("number") + 1)
+    def ordered(request):
+        cus1 = Customer.objects.order_by("-city")
+        # cus2 = Customer.objects.order_by("-city").update(city=("city1") + "new")
+        return cus1, # cus2
+
+    customers = ordered(request)
+    customers = {{customers}}
+--------------------------------------------------------------------------------------------------
+t. update()  UPDATE Customer SET city = 'newcity1' WHERE id = 1;
+    def update_t(request):
+        cus1 = Customer.objects.filter(id=3).update(city='newcity1') 
+        cus1a = Customer.objects.get(id=3).state 
+        # cus2 = Customer.objects.filter(city="city4").update(state="")
+        # cus2a = Customer.objects.get(city="city4").state  
+        return cus1, cus1a # , cus2, cus2a
+    customert = update_t(request)
+    customert = {{customert}}
+
+    def update_ta(request):
+        customer = Customer.objects.get(id=2)
+        customer.city = 'newcity2'
+        customerta = customer.save()
+        return customerta     
+    customert = update_ta(request)
+    customerta = {{customerta}}
+
+    SQL: UPDATE Customer SET zipcode = zipcode + 2;
+    def update_tb(request):
+        customer = Customer.objects.update(zipcode=F('zipcode')-10000)        
+        # customer.save()
+        return customer    
+    customertb = update_tb(request)
+    customertb = {{customertb}}
+------------------------------------------------------------------------------------------------------
+u. update_or_create()	Updates a single object. If the object doesn’t exist, it creates one
+    # Customer.objects.update_or_create(first_name='Mary',  defaults={'email':'maryj@example.com'}) 
+
+    def update_or_create_u(request):
+        cus, created = Customer.objects.update_or_create(
+            user_id=1, name="cname6", locality="loca6", 
+            city='city6', zipcode=67890, state='state6', 
+        )
+        return cus, created
+
+    customeru = update_or_create_u(request)    
+    customeru = {{customeru}}           
+
++++++++++++++++++++++++++++++ Field lookups ++++++++++++++++++++++++++++++++++++++++++++++++++
+a.contains     b.icontains     c.endswith    d.iendswith    e.exact   f.iexact
+g.gt   h.gte   i.lt   j.lte    k.startswith  l.istartswith  m.regex   n.iregex
+o.in           p.range         q.isnull      
+r.time         s.second        t.minute      u.hour
+v.date         w.day           x.week_day    y.iso_week_day
+z.week         aa.month        ab.quarter    ac.year       ad.iso_year
++++++++++++++++++++++++++++++++++++++++++ Field lookups ++++++++++++++++++++++++++++++++++++++
+ab. contains/icontains	Field contains search text. icontains is the case-insensitive version 
+11f.customer11f = Customer.objects.filter(name__contains='name1').values()
+    {{customer11f}}    
+    SELECT * FROM Customer WHERE name like '%name1%';       
+    
+11g.customer11g = Customer.objects.filter(name__icontains='cname1').values()
+    {{customer11g}}    
+    SELECT * FROM Customer WHERE name like binary '%cname1%';
+----------------------------------------------------------------------------
+cd. endswith/iendswith	Ends with search string. iendswith is the case-insensitive version   
+11m.customer11m= Customer.objects.filter(name__endswith='1').values()
+    {{customer11m}}
+    SELECT * FROM Customer WHERE name like '%A';   
+11n.customer11n = Customer.objects.filter(state__iendswith='R').values()
+    {{customer11n}}    
+    SELECT * FROM Customer WHERE state like binary '%A';   
+------------------------------------------------------------------------
+ef.exact/iexact	    Exact match. iexact is the case-insensitive version
+    SQL equivalents:
+    SELECT ... WHERE id = 14;     SELECT ... WHERE id IS NULL;
+    def exact_efl(request):
+        cus1 = Customer.objects.get(id__exact=3)
+        cus2 = Customer.objects.get(id__exact=2)
+        return cus1, cus2
+    
+    customer_efl = exact_efl(request)
+    customer_efl = {{customer_efl}}
+-----------------------------------------------------------------------
+gh. gt/gte	            Greater than/greater than or equal
+SQL equivalent:    SELECT ... WHERE id > 4;
+    def get_(request):
+        cus1 = Customer.objects.filter(id__gt=25).values_list('name')
+        cus2 = Customer.objects.filter(id__gte=25).values_list('name')
+        cus3 = list(cus1)  
+        cus4 = list(cus2) 
+        cus6 = list(Customer.objects.none())
+        print('ln 884 ', cus3, cus4)
+        # cus5 = cus3, ['<br>'.join(val) for val in cus4]
+        cus5 = str(cus3)+'\n'+str(cus4)
+        return cus5
+customer_egm = get_egm(request)
+customer_egm = {{customer_egm|linebreaks}}
+--------------------------------------------------------------------
+ij. lt/lte   Less than/less than or equal
+SQL equivalent:    SELECT ... WHERE id < 4;
+    def get_egm(request):
+        cus1 = Customer.objects.filter(id__lt=25).values_list('name')
+        cus2 = Customer.objects.filter(id__gle=25).values_list('name')
+        cus3 = list(cus1)  
+        cus4 = list(cus2) 
+        cus6 = list(Customer.objects.none())
+        print('ln 884 ', cus3, cus4)
+        # cus5 = cus3, ['<br>'.join(val) for val in cus4]
+        cus5 = str(cus3)+'\n'+str(cus4)
+        return cus5
+customer_egm = get_egm(request)
+customer_egm = {{customer_egm|linebreaks}}
+--------------------------------------------------------------------
+kl. startswith/istartswith	Starts with search string. istartswith is the case-insensitive version
+11k.customer11k = Customer.objects.filter(zipcode__startswith=1).values('name', 'zipcode') 
+    {{customer11k}}        
+    SELECT * FROM Customer WHERE zipcode like 'A%'; 
+11k.customer11l = Customer.objects.filter(state__istartswith='P').values('name', 'state')    
+    {{customer11l}}    
+    SELECT * FROM Customer WHERE state like binary 'A%';
+-------------------------------------------------------------------
+mn. regex/iregex	    Matches a regular expression/Same as regex, but case-insensitive
+    SELECT ... WHERE title REGEXP BINARY '^(An?|The) +'; -- MySQL
+    SELECT ... WHERE REGEXP_LIKE(title, '^(An?|The) +', 'c'); -- Oracle
+    SELECT ... WHERE title ~ '^(An?|The) +'; -- PostgreSQL
+    SELECT ... WHERE title REGEXP '^(An?|The) +'; -- SQLite
+    customermn = Customer.objects.get(state__regex=r'^(Ne?|C) +')
+    {{customermn}}
+------------------------------------------------------------------
+o.  in	                In a given iterable (list, tuple or QuerySet)
+    customer11o = Customer.objects.filter(city__in=['city1', 'city3']).values('name', 'city')   
+    {{customer11o}}    
+    SELECT * FROM Customer WHERE city in ('city1', 'city2'); 
+----------------------------------------------------------------------
+p. range	            Range test. Range includes start and finish values
+11t.customer11t = Customer.objects.filter(id__range=(2, 4)).values()
+    {{customer11t}}
+    SELECT * FROM Customer WHERE id BETWEEN 2 AND 4;
+------------------------------------------------------------------
+q. isnull	            Checks if field is null.Matches NULL values. Returns True or False
+
+    SELECT * FROM Customer WHERE state is NULL;
+    customer14a = Customer.objects.filter(state__isnull=True)
+    {{customer14a}}     
+    customer14b = Customer.objects.filter(state=None)
+    {{customer14b}} 
+
+    SELECT * FROM Customer WHERE state is NOT NULL;
+    customer14c = Customer.objects.filter(state__isnull=False)
+    {{customer14c}} 
+    customer14d = Customer.objects.exclude(state=None)
+    {{customer14d}} 
+----------------------------------------------------------------------
+r. time	    Casts the value as a time. Used for datetime field lookups /  Matches a time (for datetimes)
+s. second	    Searches for an exact second match / Matches a second (for datetimes)
+t. minute	    Searches for an exact minute match / Matches a minute (for datetimes
+u. hour	    Searches for an exact hour match / Matches an hour (for datetimes)
+
+w. day	        Searches for an exact day match / Matches a date (day of month, 1-31) (for dates)
+v. date	    Casts the value as a date. Used for datetime field lookups / Matches a date
+x. week_day	Searches for an exact day of the week match / Matches a day of week (1-7) 1 is sunday
+y. iso_week_day	Matches a ISO 8601 day of week (1-7) 1 is monday
+
+z. week	    Searches for an exact week match /  Matches a week number (1-53) (for dates)
+aa. month	    Searches for an exact month match / Matches a month (for dates)
+ab. quarter	    Matches an exact quarter of the year (1-4) (for dates) Valid integer range: 1–4
+ac. year	    Searches for an exact year match / Matches a year (for dates)
+ad. iso_year	Searches for an exact ISO 8601 year match / Matches an ISO 8601 year (for dates)
+
++++++++++++++++++++   Aggregation functions ++++++++++++++++++++++++++++++++
+Avg     Count     default        expressions    **extra     filter
+Max     Min       output_field   StdDev         Sum         Variance
+--------------------------------------------------------------
+avg SELECT AVG(zipcode) FROM Customer;
+    from django.db.models import Avg
+    def get_avg(request):
+        cus = Customer.objects.all().aggregate(Avg('zipcode'))
+        return cus
+
+    customer_avg = get_avg(request)
+    customer_avg = {{customer_avg}}
+------------------------------------------------------------
+Count  SELECT COUNT(*) FROM Customer;   
+
+    def get_count(request):
+        cus = Customer.objects.all().aggregate(Count('city'))
+        return cus
+
+    customer_count = get_count(request)
+    customer_count = {{customer_count}}
+
+    def get_counta(request):
+        cus1 = Customer.objects.count()
+        return cus1
+
+    customer_counta = get_counta(request)
+    customer_counta = {{customer_counta}}
+------------------------------------------------------------
+default
+
+expressions
+Strings that reference fields on the model, or query expressions.
+output_field¶
+An optional argument that represents the model field of the return value
+
+**extra
+Keyword arguments that can provide extra context for the SQL generated by the aggregate.
+
+filter  see 11 all
+--------------------------------------------------------------
+max SQL:  SELECT MAX(age) FROM Customer;
+
+    from django.db.models import Max
+    def get_max(request):
+        cus = Customer.objects.all().aggregate(Max('zipcode'))
+        return cus
+
+    customer_max = get_max(request)
+    customer_max = {{customer_max}}
+-----------------------------------------------------------------
+min SQL: SELECT MIN(zipcode) FROM Customer;
+
+    from django.db.models import Min
+    def get_min(request):
+        cus = Customer.objects.all().aggregate(Min('zipcode'))
+        return cus
+
+    customer_min = get_min(request)
+    customer_min = {{customer_min}}
+--------------------------------------------------------------
+output_field  
+An optional argument that represents the model field of the return value
+
+StdDev
+class StdDev(expression, sample=False, filter=None, **extra)[source]¶
+Returns the standard deviation of the data in the provided expression.
+Default alias: <field>__stddev
+Return type: float
+Has one optional argument:
+sample¶
+By default, StdDev returns the population standard deviation. However, if sample=True, the return value will be the sample standard deviation.
+-----------------------------------------------------------
+Sum  SELECT SUM(zipcode) FROM Customer;
+
+    from django.db.models import Sum
+    def get_sum(request):
+        cus = Customer.objects.all().aggregate(Sum('zipcode'))
+        return cus
+
+    customer_sum = get_sum(request)
+    customer_sum = {{customer_sum}}
+----------------------------------------------------------
+Variance
+class Variance(expression, sample=False, filter=None, **extra)[source]¶
+Returns the variance of the data in the provided expression.
+Default alias: <field>__variance
+Return type: float
+Has one optional argument:
+sample¶
+By default, Variance returns the population variance. However, if sample=True, the return value will be the sample variance.
+++++++++++++++++++++++  Query-related tools  +++++++++++++++++++++++++++++
+Q() objects
+Prefetch() objects
+prefetch_related_objects()
+FilteredRelation() objects
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+https://masteringdjango.com/django-tutorials/mastering-django-advanced-models/
+
+------------------------------------------------------------------------------------------
+</pre>
+</div>
+{% endblock main-content %}

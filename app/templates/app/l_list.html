@@ -1,0 +1,95 @@
+﻿{% extends './index.html' %} 
+{% load static %} 
+{% block content %}
+
+
+	<!-- inner banner -->	
+	<div class="w3layouts-inner-banner">
+		<div class="container">
+			<div class="logo">
+				<h1><a class="cd-logo link link--takiri" href="index.html">Language - Match (abridged) <span><i class="fa fa-heart" aria-hidden="true"></i>Made in heaven.</span></a></h1>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+	</div>
+	<!-- //inner banner -->		
+
+	
+	<!-- breadcrumbs -->
+	<div class="w3layouts-breadcrumbs text-center">
+		<div class="container">
+			<span class="agile-breadcrumbs"><a href="index.html">Home</a> > <span>Language here</span></span>
+		</div>
+	</div>
+	<!-- //breadcrumbs -->
+
+		<div  class="container w3ls-list">	
+		<div class="row" style="border: dotted red; background-color: orange;">
+			<!-- All Profiles -->
+			<h3 class="text-center">Language Matrimonial Profiles list</h3>
+			<div> seekername: {{seekernamelist}} </div>
+			<br>
+			<div> seekerlang: {{seeker}} </div>			
+		</div>
+		<br>
+
+		<div class="row w3ls-list" style="border: dotted green; background-color:white;">	
+
+			<div class="col-md-3 w3ls-aside">	
+				<div  style="background-color: yellow"> 1st column </div>			
+				<div  style="background-color: pink"> {% include './w3ls-aside.html' %}	</div>
+			</div>
+
+			<div class="col-md-9 profiles-list-agileits" style="background-color: yellow">	
+				<div id="parentHorizontalTab">				
+					<!--Horizontal Tab-->		
+					<ul class="resp-tabs-list hor_1">
+						<li>Grooms</li>
+						<li>Brides</li>
+					</ul>
+				</div>				
+				<!--Horizontal Tab-->
+				<div class="row resp-tabs-container hor_1">	
+					{% include './horizontal_tab.html' %}
+				</div>
+			</div>
+		</div>
+		<div class="clearfix"></div>
+	</div>	
+		<script src="{% static 'js/easyResponsiveTabs.js' %}"></script>
+		<script type="text/javascript">
+			$(document).ready(function () {
+
+				$('#parentHorizontalTab').easyResponsiveTabs({
+					type: 'default', //Types: default, vertical, accordion
+					width: 'auto', //auto or any width like 600px
+					fit: true, // 100% fit in a container
+					closed: 'accordion', // Start closed if in accordion view
+					tabidentify: 'hor_1', // The tab groups identifier
+					activate: function (event) { // Callback function if tab is switched
+						var $tab = $(this);
+						var $info = $('#nested-tabInfo');
+						var $name = $('span', $info);
+			
+						$name.text($tab.text());
+			
+						$info.show();
+					}
+				});
+		
+			});
+		</script>	
+		<!-- //All Profiles -->
+	</div>
+
+	<!-- Get started -->
+	<div class="w3layous-story text-center">
+		<div class="container">
+			<h4>Your story is waiting to happen!  <a href="index.html">Get started</a></h4>
+		</div>
+	</div>
+	<!-- //Get started -->
+
+	{% include './browse_profiles.html' %}
+
+{% endblock content %}

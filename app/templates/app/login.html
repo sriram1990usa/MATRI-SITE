@@ -1,0 +1,110 @@
+﻿{% extends './index.html' %}
+{% load static %}
+{% block content %}
+
+	<div class="w3layouts-banner" id="home">
+		<div class="container">
+			<div class="logo">
+				<h1><a class="cd-logo link link--takiri" href="{% url 'home' %}">Login - Match (abridged)
+						<span><i class="fa fa-heart" aria-hidden="true"></i>Made in heaven.</span>
+					</a>
+				</h1>
+			</div>
+		<div class="clearfix"></div>
+		<div class="agileits-register">  
+			<h3> Login </h3> 
+			<div class="w3_modal_body_grid">
+				<span>Login For:</span>
+				<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title">Login to Continue</h4>
+				</div>
+				<div class="modal-body">
+					<div class="login-w3ls">
+						<form id="signin" action="" method="post">
+							{% csrf_token %}
+							<label>User Name </label>
+							<input type="text" name="username" placeholder="Username" required="">
+							<label>Password</label>
+							<input type="password" name="password" placeholder="Password" required="">	
+							<div class="w3ls-loginr"> 
+								<input type="checkbox" id="brand" name="checkbox" value="">
+								<span> Remember me ?</span> 
+								<a href="#">Forgot password ?</a>
+							</div>
+							<div class="clearfix"> </div>
+							<!----<input type="submit" name="submit" value="Login"></a>---->
+							<button type="submit"> LOGIN </button>
+							<div class="clearfix"> </div>
+							<div class="social-icons">
+								<ul>  
+									<li><a href="#"><span class="icons"><i class="fa fa-facebook" aria-hidden="true"></i></span><span class="text">Facebook</span></a></li> 
+									<li class="twt"><a href="#"><span class="icons"><i class="fa fa-twitter" aria-hidden="true"></i></span><span class="text">Twitter</span></a></li>  
+								</ul> 
+								<div class="clearfix"> </div>
+							</div>	
+						</form>
+					</div>
+				</div>
+			</div>		
+		</div>
+	</div>
+				   
+ <script>
+    let saveFile = () => {
+    	
+        // Get the data from each element on the form.
+                const profilefor = document.getElementById('w3_country');
+                const name=document.getElementById('regnName');
+            const gender=document.getElementById('gender');
+             const dob=document.getElementById('datepicker');
+         const religion=document.getElementById('w3_country1');
+               const phone=document.getElementById('phone');
+            const email=document.getElementById('regnEmail');
+           const password=document.getElementById('regnPwd');
+
+
+//     const name = document.getElementById('txtName');
+//     const age = document.getElementById('txtAge');
+//     const email = document.getElementById('txtEmail');
+//     const country = document.getElementById('selCountry');
+//     const msg = document.getElementById('msg');
+ 
+        // This variable stores all the data.
+        let data = 
+                '\r ProfileFor: ' + profilefor.value + ' \r\n' +
+                    'Name: ' + name.value + ' \r\n' +
+                    'Gender: ' + gender.value  + ' \r\n' +
+                    'DOB: ' + dob.value  + ' \r\n' +
+                    'Religion: ' + religion.value + ' \r\n' +
+                  'Phone: ' + phone.value + ' \r\n' +
+               'Email: ' + email.value + ' \r\n' +
+               'Pwd: ' + password.value;
+
+//            '\r Name: ' + name.value + ' \r\n ' + 
+ //           'Age: ' +age.value + ' \r\n ' + 
+//            'Email: ' + email.value + ' \r\n ' + 
+//            'Country: ' + country.value + ' \r\n ' + 
+//            'Message: ' + msg.value;
+        
+        // Convert the text to BLOB.
+        const textToBLOB = new Blob([data], { type: 'text/plain' });
+        const sFileName = 'formData.txt';	   // The file to save the data.
+
+        let newLink = document.createElement("a");
+        newLink.download = sFileName;
+
+        if (window.webkitURL != null) {
+            newLink.href = window.webkitURL.createObjectURL(textToBLOB);
+        }
+        else {
+            newLink.href = window.URL.createObjectURL(textToBLOB);
+            newLink.style.display = "none";
+            document.body.appendChild(newLink);
+        }
+
+        newLink.click(); 
+    }
+ </script>
+		
+{% endblock content %}

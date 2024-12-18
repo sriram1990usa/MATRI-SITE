@@ -1,0 +1,292 @@
+﻿{% extends './index.html' %} 
+{% load static %} 
+{% block content %}	
+<link rel="stylesheet" href="{% static 'css/intlTelInput.css' %}">
+
+ <style>
+	
+        * {
+            box-sizing: border-box;
+        }
+		/*
+    	div {
+            padding: 10px;
+            background-color: #f6f6f6;
+            overflow: hidden;
+        }
+		*/
+		#addfewelements {
+            padding: 10px;
+            background-color: #f6f6f6;
+            overflow: hidden;
+        }
+    	input[type=text], textarea, select {
+            font: 17px Calibri;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type=button]{ 
+            font: 17px Calibri;
+            width: auto;
+            float: left;
+            cursor: pointer;
+            padding: 7px;
+        }
+</style>
+
+
+
+<div class="w3layouts-banner" id="home">
+<div class="container">
+	<h4> from form_entry.html </h4>
+	<div class="logo">
+		<h1><a class="cd-logo link link--takiri" href="index.html">Match (abridged)<span><i class="fa fa-heart" aria-hidden="true"></i>Made in heaven.</span></a></h1>
+	</div>
+	<div class="clearfix"></div>
+	<div class="agileits-register">
+		<h3>ADD SEEKER'S DATA !</h3>
+		<form action="#" method="post">
+			{% csrf_token %}
+				<div class="w3_modal_body_grid">
+					<span>Profile For:</span>
+					<select id="w3_country" onchange="change_country(this.value)" class="frm-field required">
+						<option value="null">Select</option>
+						<option value="null">Myself</option>   
+						<option value="null">Son</option>   
+						<option value="null">Daughter</option>   
+						<option value="null">Brother</option>   
+						<option value="null">Sister</option>  
+						<option value="null">Relative</option>
+						<option value="null">Friend</option>						
+					</select>
+				</div>
+				<div class="w3_modal_body_grid w3_modal_body_grid1">
+					<span>Name:</span>
+					<input type="text" name="Name" placeholder=" " required=""/>
+				</div>
+
+				<div class="w3_modal_body_grid">
+					<span>Gender:</span>
+					<div class="w3_gender">
+						<div class="colr ert">
+							<label for="indoor">Male
+								<input id="indoor" type="radio" 
+								name="indoor-outdoor">
+							</label>
+						</div>
+						<label for="outdoor">Female
+								<input id="outdoor" type="radio" 
+								name="indoor-outdoor">
+						</label>
+
+						<div class="clearfix"> </div>
+					</div>
+					<div class="clearfix"> </div>
+				</div>
+
+				<div class="w3_modal_body_grid w3_modal_body_grid1">
+					<span>Date Of Birth:</span>
+					<input class="date" id="datepicker" name="seeker_dob" 
+					type="text" value="mm/dd/yyyy" 
+					onfocus="this.value = '';" 
+					onblur="if (this.value == '') {this.value = '2/08/2013';}" 
+					required="" />
+				</div>
+
+				<div class="w3_modal_body_grid w3_modal_body_grid1">
+					<span>religion:</span>
+					<select id="w3_country1" 
+					onchange="change_country(this.value)" 
+					name="seeker_religion" 
+					class="frm-field required"> 
+						<option value="null">Select Religion</option>
+						<option value="null">Muslim</option>
+						<option value="null">Hindu</option>    
+						<option value="null">Christian</option>   
+						<option value="null">Sikh</option>   
+						<option value="null">Jain</option>   
+						<option value="null">Buddhist</option>
+						<option value="null">No Religious Belief</option>   						
+					</select>
+				</div>
+
+				<div class="form-group col-md-12 mb-3">
+					<span>Caste:  </span>
+					<input type="text" name="seeker_caste" placeholder="enter caste" required=""/>
+				  </div>
+
+				  <div class="form-group col-md-12 mb-3">
+					<span>Language:  </span>
+					<input type="text" name="seeker_language" placeholder="enter language" required=""/>
+				  </div>
+
+				  <div class="form-group col-md-12 mb-3">
+					<span>Occupation:  </span>
+					<input type="text" name="seeker_occupation" placeholder="enter occupation" required=""/>
+				  </div>
+
+				<div class="w3_modal_body_grid w3_modal_body_grid1">
+					<span>City:</span>                  
+					<select class="frm-field required" name="seeker_city" 
+						id="w3_country1">                     
+						<option value={{formentryform.seeker_city}} ></option>                    
+					 </select>
+					 <div class="clearfix"> </div>
+				  </div>      
+			 
+				  <div class="form-group col-md-12 mb-3">
+					<span>State:  </span>
+					<input type="text" name="seeker_state" placeholder="enter State" required=""/>
+				  </div>
+  
+				  <div class="form-group col-md-12 mb-3">
+					<span>NRI-Country:  </span>
+					<input type="text" name="seeker_country" placeholder="enter Country" required=""/>
+				  </div>    
+				<div class="w3-agree">
+					<input type="checkbox" id="c1" name="cc">
+					<label class="agileits-agree">I have read & agree to the <a href="terms.html">Terms and Conditions</a></label>
+				</div>
+				<input type="submit" value="Register me" />
+				<div class="clearfix"></div>
+				<p class="w3ls-login">Already a member? <a href="#" data-toggle="modal" data-target="#myModal">Login</a></p>
+			</form>
+		</div>
+
+		<!-- Modal -->
+				<div id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+				  <div class="modal-dialog">
+					<!-- Modal content-->
+					<div class="modal-content">
+					  <div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>		
+						<h4 class="modal-title">Login to Continue</h4>
+					  </div>
+					  <div class="modal-body">
+						<div class="login-w3ls">
+							<form id="signin" action="#" method="post">
+							{% csrf_token %}
+								<label>User Name </label>
+								<input type="text" name="User Name" placeholder="Username" required="">
+								<label>Password</label>
+								<input type="password" name="Password" placeholder="Password" required="">	
+								<div class="w3ls-loginr"> 
+									<input type="checkbox" id="brand" name="checkbox" value="">
+									<span> Remember me ?</span> 
+									<a href="#">Forgot password ?</a>
+								</div>
+								<div class="clearfix"> </div>
+								<input type="submit" name="submit" value="Login">
+								<div class="clearfix"> </div>
+								<div class="social-icons">
+									<ul>  
+										<li><a href="#"><span class="icons"><i class="fa fa-facebook" aria-hidden="true"></i></span><span class="text">Facebook</span></a></li> 
+										<li class="twt"><a href="#"><span class="icons"><i class="fa fa-twitter" aria-hidden="true"></i></span><span class="text">Twitter</span></a></li>  
+									</ul> 
+									<div class="clearfix"> </div>
+								</div>	
+							</form>
+						</div>
+					  </div>
+					</div>
+				  </div>
+				</div>
+				<!-- //Modal -->
+	</div>
+</div>
+
+  <div>
+        
+        <!--Add few elements to the form-->
+<div class="container" id="addfewelements">
+        <div>
+            <input type="text" id="txtName" placeholder="Enter your name" />
+        </div>
+        <div>
+            <input type="text" id="txtAge" placeholder="Enter your age" />
+        </div>
+        <div>
+            <input type="text" id="txtEmail" placeholder="Enter your email address" />
+        </div>
+        <div>
+            <select id="selCountry">
+                <option selected value="">-- Choose the country --</option>
+                <option value="India">India</option>
+                <option value="Japan">Japan</option>
+                <option value="USA">USA</option>
+            </select>
+        </div>
+        <div>
+            <textarea id="msg" name="msg" placeholder="Write some message ..." style="height:100px"></textarea>
+        </div>
+        <div>
+            <input type="button" id="bt" value="Save data to file" onclick="saveFile()" />
+        </div>
+	</div>
+    </div>
+
+	
+{% include './browse_profiles.html' %}
+
+	
+<!-- Get started -->
+<div class="w3layous-story text-center">
+	<div class="container">
+		<h4>Your story is waiting to happen!  <a href="{% url 'home' %}">Get started</a></h4>
+	</div>
+</div>
+<!-- //Get started -->
+<script>
+    let saveFile = () => {
+    	
+        // Get the data from each element on the form.
+    	const name = document.getElementById('txtName');
+        const age = document.getElementById('txtAge');
+        const email = document.getElementById('txtEmail');
+        const country = document.getElementById('selCountry');
+        const msg = document.getElementById('msg');
+        
+        // This variable stores all the data.
+        let data = 
+            '\r Name: ' + name.value + ' \r\n ' + 
+            'Age: ' +age.value + ' \r\n ' + 
+            'Email: ' + email.value + ' \r\n ' + 
+            'Country: ' + country.value + ' \r\n ' + 
+            'Message: ' + msg.value;
+        
+        // Convert the text to BLOB.
+        const textToBLOB = new Blob([data], { type: 'text/plain' });
+        const sFileName = 'formData.txt';	   // The file to save the data.
+
+        let newLink = document.createElement("a");
+        newLink.download = sFileName;
+
+        if (window.webkitURL != null) {
+            newLink.href = window.webkitURL.createObjectURL(textToBLOB);
+        }
+        else {
+            newLink.href = window.URL.createObjectURL(textToBLOB);
+            newLink.style.display = "none";
+            document.body.appendChild(newLink);
+        }
+
+        newLink.click(); 
+    }
+const fs = require('fs');
+
+// destination will be created or overwritten by default.
+/*
+fs.copyFile('E:\downloads\formData.txt', 'E:\GM\BOOTSTRAP\WEBSITES\FORMS\formData.txt', (err) => {
+  if (err) throw err;
+  console.log('File was copied to destination');
+});
+*/
+fs.copyFile('C:\Users\rajesh\downloads\formData.txt', 'D:\GM\WEB-PROJECTS\BOOTSTRAP4-PROJECTS\MATRI-SITE\formData.txt', (err) => {
+	if (err) throw err;
+	console.log('File was copied to destination');
+  });
+
+</script>
+{% endblock content %}

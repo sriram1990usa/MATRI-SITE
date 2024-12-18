@@ -1,0 +1,20 @@
+https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Authentication
+
+https://docs.djangoproject.com/en/5.0/topics/auth/customizing/#using-a-custom-user-model-when-starting-a-project
+
+Recommended to set up a custom user model when starting a project, 
+as you'll be able to easily customize it in the future if the need arises. 
+
+If using a custom user model the code to create the same user would look like this:
+
+# Get current user model from settings
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+# Create user from model and save to the database
+user = User.objects.create_user('myusername', 'myemail@crazymail.com', 'mypassword')
+
+# Update fields and then save again
+user.first_name = 'Tyrone'
+user.last_name = 'Citizen'
+user.save()

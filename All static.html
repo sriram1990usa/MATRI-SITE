@@ -1,0 +1,180 @@
+proj.urls.py 
+
+from django.conf import settings
+from django.conf.urls.static import static
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+--------------------------------------------------------
+root > app > media> .jpg  OR  app>media>img>.jpg
+   
+root > app > static > app > .jpg   
+root > app > static > app > img > .jpg 
+root > app > static > app > css > .css 
+root > app > static > app > js > .js
+
+root > app > static > img > .jpg   
+
+root > static > img > .jpg
+root > static > css > .css 
+----------------------------------------------------- 
+pipp install whitenoise
+pip install Pillow 
+pip freeze > requirements.txt 
+pip install -r requirements.txt 
+--------------------------------------
+proj > settings.py
+'whitenoise.middleware.WhiteNoiseMiddleware',
+STATIC_URL = 'static/' # ok
+# STATIC_url = '/static/'  # ok
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static"),]  # ok
+# STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)  # ok
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # ok
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  #ok
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage" # ok 
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+if img files in root/media>
+MEDIA_URL = '/media/'  # ok
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # ok
+
+if img files in root>media?img>
+MEDIA_URL = '/media/img/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/img/')
+
+mimetypes.add_type("text/css", ".css", True) # ok
+---------------------------------------------------------------
+SEE LAST FOR IMAGE UPLOAD AND DISPLAY ALL FILES
+-------------------------------------------------------- 
+INSTALLED_APPS = ['app']
+'DIRS': ['templates'],
+
+LOGIN_REDIRECT_URL = 'home'
+#LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = 'home'
+PROJECT_ROOT = os.path.join(os.path.abspath(__file__))
+----------------------------------------------------------------
+base.html 
+<link rel="shortcut icon" type="image/jpg" href="{% static 'favicon.jpg' %}"/>
+<link rel="stylesheet" href="{% static 'app/css/owl.carousel.min.css' %}">
+<!--FontAwesome CSS-->
+<link rel="stylesheet" href="{% static 'app/css/all.min.css' %}">
+<!--Custom CSS-->
+<link rel="stylesheet" href="{% static 'app/css/style.css' %}">
+<img src="{% static 'app/images/payment.png' %}" alt="" srcset="" class="img-fluid" height="2px">
+
+<script src="{% static 'app/js/owl.carousel.min.js' %}"></script>
+<script src="{% static 'app/js/all.min.js' %}"></script>
+<script src="{% static 'app/js/myscript.js' %}"></script>
+
+urls.py (proj)
+path('',include('app.urls')),
+urls.py (app)
+app_name = 'app'
+path('mobile/', mobile, name='mobile'),
+path('mobile/<slug:data>', mobile, name='mobiledata'),
+
+mobile.html
+<a href="{% url 'app:mobile' %}" class="list-group-item list-group-item-action" aria-current="true">All Mobiles</a>
+<a href="{% url 'app:mobiledata' 'Samsung' %}" class="list-group-item list-group-item-action" aria-current="true">Samsung</a>
+
+ALL ABOUT MEDIA 
+media files stored in root>media 
+media files uploaded to root>media>media or root>uploads>uploads
+
+in proj>urls.py
++static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
+in settings.py 
+
+MEDIA_URL:  
+URL where users can access media files.
+URL that makes the static media accessible over HTTP.
+URL that handles media served from MEDIA_ROOT
+root>media>1.jpg, 2.jpg, 3.jpg
+MEDIA_URL = '/media/'
+
+
+class producat(models.Model):
+    # img = models.ImageField(upload_to='media/')
+    img = models.ImageField(upload_to='uploads/') # works
+
+MEDIA_ROOT is the path to the directory containing your static media.
+MEDIA_ROOT: The absolute path to directory to hold user uploaded files.
+MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+MEDIA_ROOT = os.path.join(BASE_DIR,'uploads') # works
+you don't need to create uploads dir.
+----------------------------------------------------------------
+MODEL FORM HTML URL VIEWS SETTINGS FOR MEDIA UPLOAD AND DISPLAY:
+https://studygyaan.com/django/how-to-upload-and-display-image-in-django
+
+from django.db import models
+
+class UploadedImage(models.Model):
+    image = models.ImageField(upload_to='uploads/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+----------------------------------------------------------
+from django import forms
+from .models import UploadedImage
+
+class UploadImageForm(forms.ModelForm):
+    class Meta:
+        model = UploadedImage
+        fields = ('image',)
+--------------------------------------------------
+from .models import UploadedImage
+from .forms import UploadImageForm
+
+def upload_image(request):
+    if request.method == 'POST':
+        form = UploadImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+    else:
+        form = UploadImageForm()
+    
+    return render(request, 'upload_image.html', {'form': form})
+
+def gallery(request):   
+    images = UploadedImage.objects.all()
+    return render(request, 'gallery.html', {'images': images})    
+---------------------------------------------------------------
+<!-- imageoperations/templates/upload_image.html -->
+<body>
+    <h2>Upload Images</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html>
+----------------------------------------------------------
+<!-- imageoperations/templates/gallery.html -->
+<body>
+    <h3>Uploaded Images:</h3>
+    <ul>
+        {% for image in images %}
+            <li><img src="{{ image.image.url }}" alt="Uploaded Image"></li>
+        {% empty %}
+            <li>No images uploaded yet.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+------------------------------------------------------
+import os
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+-------------------------------------------------------
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    path('upload/', upload_image, name='upload_image'),
+    path('gallery/', gallery, name='gallery')
+    ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+-----------------------------------------------------------

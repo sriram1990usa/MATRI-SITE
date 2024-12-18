@@ -1,0 +1,60 @@
+	{% load static %}
+        
+       
+    <!--Horizontal Tab-->
+    <div class="match-profile">     
+       
+
+            <div class="col-md-6 one-w3-profile">	
+                <div style="background-color: cyan"> h-1 something </div>	      
+                {% for seek in seeker %}	               		
+                <div class="">
+                    <div class="profile-details">
+                        <h5>Profile ID first : T45Dfsd64</h5> 
+                        <img src="{% static 'images/profile-image-men.jpg' %}" class="prf-img img-responsive" alt="profile image" />
+                        <div class="w3-prfr">                         
+                            <p>25 Years, 5' 8" , {{seek.seeker_language}} {{seek.seeker_religion}}, {{seek.seeker_caste}},
+                                    MCA/PGDCA, Rs. 15 - 20 Lakh, Software {{seek.seeker_state}} {{seek.seeker_country}}</p>
+                            <h4>Contact Now:</h4>
+                            <a href="/login">Login</a>
+                            <span>or</span>
+                            <a href="/signinlogin">Register</a>                                    
+                        </div>
+                        <div class="clearfix"></div>
+                        <p class="light">Smart, Intelligent, well mannered and humble boy... <a href="/groom_profile">read more</a></p>
+                    </div>
+                </div>  
+                <div class="clearfix"></div>
+                {% endfor %}
+            </div>		
+
+            <div class="col-md-6">	
+                <div style="background-color: pink"> h-1 something </div>	      
+                {% for seek in seeker %}	               		
+                <div class="">
+                    <div class="profile-details">
+                        <h5>BRIDE Profile ID first : T45Dfsd64</h5> 
+                        <img src="{% static 'images/profile-image-girl.jpg' %}" class="prf-img img-responsive" alt="profile image" />
+                        <div class="w3-prfr">    
+                            <p>24yrs / 5Ft 3Inch (160 cm) {{seek.seeker_state}}  {{seek.seeker_religion}}</p> 
+                            <p>{{seek.seeker_caste}} {{seek.seeker_language}} {{seek.seeker_country}}</p>
+                                               
+                           <h4>Contact Now:</h4>
+                            <a href="/login">Login</a>
+                            <span>or</span>
+                            <a href="/signinlogin">Register</a>                                    
+                        </div>
+                        <div class="clearfix"></div>
+                        <p class="light">My daughter, is fair, charming and broad minded. S... <a href="/bride_profile">read more</a></p>
+                    
+                     </div>
+                </div>  
+                <div class="clearfix"></div>
+                {% endfor %}
+            </div>		
+
+
+        
+    </div>
+
+    
